@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Login Page</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <script src="requestHandling.js"></script>
+  <!-- <script src="../cs/js/utils.js"></script>
+  <script src="../cs/js/server_status.js"></script> -->
+  <link rel="stylesheet" type="text/css" href="login.css">
+</head>
+
+<nav class="navbar sticky-top navbar-dark bg-dark shadow fixed-top">
+  <a class="navbar-brand"href="index.html">Toodle</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="loginPage.html">Login</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="registerPage.html">Register</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="aboutUsPage.html">The Team</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="faqPage.html">F.A.Q</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="contactUsPage.html">Contact Us</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+        <div class="card card-signin my-5">
+          <div class="card-body">
+            <h5 class="card-title text-center">Customer Sign In</h5>
+            <form class="form-signin" name="loginForm">
+              <div class="form-label-group">
+                <input type="username" id="inputUsername" class="form-control" name="user" placeholder="Username" required autofocus>
+                <label for="inputUsername">Username</label>
+              </div>
+
+              <div class="form-label-group">
+                <input type="password" id="inputPassword" class="form-control" name="pass" placeholder="Password" required>
+                <label for="inputPassword">Password</label>
+              </div>
+
+              <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="customCheck1">
+                <label class="custom-control-label" for="customCheck1">Remember password</label>
+              </div>
+              <button class="btn btn-lg btn-primary btn-block text-uppercase" type="button" onclick="validateForm()">Sign in</button>
+              <hr class="my-4">
+              <button class="btn btn-lg btn-signup btn-block text-uppercase" type="button" onclick="load_page('registerPage.html')"> Dont Have An Account? Sign Up</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script>
+
+    // Allow form inputs to submit on enter key.
+    function enterKey(e) {
+        if (event.key === "Enter") {
+            validateForm();
+        }
+    }
+
+    // Check if form inputs are valid.
+    function validateForm() {
+
+      // Check username
+      var name = document.forms["loginForm"]["user"].value;
+
+      if (name == "") {
+          alert("Name must be filled out!");
+          return false;
+      }
+
+      // Check Password
+      var pass = document.forms["loginForm"]["pass"].value;
+
+      if (pass == "") {
+          alert("Password must be filled out!");
+          return false;
+      }
+
+        // Store username and password inside a dictionary
+        var login_dictionary = {"username": name, "password": pass};
+	console.log(login_dictionary);
+        // Send username and password to the backend to check against values in the DB
+        send_login_demand(login_dictionary);
+        return false;
+    }
+
+
+</script>
+</html>
