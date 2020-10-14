@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.css": "/static/css/main.30e67efd.chunk.css",
+    "main.js": "/static/js/main.ed36aea0.chunk.js",
+    "main.js.map": "/static/js/main.ed36aea0.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.d4dc386d.js",
+    "runtime-main.js.map": "/static/js/runtime-main.d4dc386d.js.map",
+    "static/js/2.2b6d19be.chunk.js": "/static/js/2.2b6d19be.chunk.js",
+    "static/js/2.2b6d19be.chunk.js.map": "/static/js/2.2b6d19be.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.42fa8b97a01a58f1cd3b338fddcf0d35.js": "/precache-manifest.42fa8b97a01a58f1cd3b338fddcf0d35.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/main.30e67efd.chunk.css.map": "/static/css/main.30e67efd.chunk.css.map",
+    "static/js/2.2b6d19be.chunk.js.LICENSE.txt": "/static/js/2.2b6d19be.chunk.js.LICENSE.txt",
+    "static/media/Best-Programming-Languages-to-Start-Learning-Today.jpg": "/static/media/Best-Programming-Languages-to-Start-Learning-Today.7b8d9a65.jpg",
+    "static/media/Competitive-Programming-1.jpg": "/static/media/Competitive-Programming-1.096339a2.jpg",
+    "static/media/download.jpeg": "/static/media/download.49b36068.jpeg",
+    "static/media/favicon.ico": "/static/media/favicon.9c77ce03.ico",
+    "static/media/Welcome.css": "/static/media/img02.d9254df4.jpg",
+    "static/media/placeholder.png": "/static/media/placeholder.76b2bfd3.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.d4dc386d.js",
+    "static/js/2.2b6d19be.chunk.js",
+    "static/css/main.30e67efd.chunk.css",
+    "static/js/main.ed36aea0.chunk.js"
+  ]
+}
