@@ -126,6 +126,8 @@ func main() {
 		AllowedOrigins:   []string{"http://206.189.194.211:8000"},
 		AllowCredentials: true,
 	})
+
+	handler := c.Handler(r)
 	//listen on port 8000
-	http.ListenAndServe(":8000", r)
+	http.ListenAndServe(":8000", handler)
 }
