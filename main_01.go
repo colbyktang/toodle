@@ -123,7 +123,7 @@ func main() {
 	r.HandleFunc("/people", getPeopleEndpoint).Methods("GET")
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://206.189.194.211:8000"},
+		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
 	})
 
