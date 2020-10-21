@@ -124,7 +124,10 @@ func main() {
 	//initalize a  cors object
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Accept", "Accept-Language", "Content-Type"},
 		AllowCredentials: true,
+		Debug:            true,
 	})
 
 	handler := c.Handler(r)
