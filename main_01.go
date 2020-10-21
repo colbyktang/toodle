@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -122,12 +121,12 @@ func main() {
 	r.HandleFunc("/register", CreatePersonEnpoint).Methods("POST") //create a collection in the databse
 	r.HandleFunc("/people", getPeopleEndpoint).Methods("GET")
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowCredentials: true,
-	})
+	// c := cors.New(cors.Options{
+	// 	AllowedOrigins:   []string{"*"},
+	// 	AllowCredentials: true,
+	// })
 
-	handler := c.Handler(r)
+	// handler := c.Handler(r)
 	//listen on port 8000
-	http.ListenAndServe(":8000", handler)
+	http.ListenAndServe(":8000", r)
 }
