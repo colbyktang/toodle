@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -118,19 +118,15 @@ func main() {
 	fmt.Println(database)
 
 	r := mux.NewRouter() //intialize an instance of the mux router to listen for API request
+	//Setting attributes to whitelist an access
+	header := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	origin := handlers.AllowedOrigins([]string{"*"})
+
 	//define a path that would lead the function
 	r.HandleFunc("/register", CreatePersonEnpoint).Methods("POST") //create a collection in the databse
 	r.HandleFunc("/people", getPeopleEndpoint).Methods("GET")
-	//initalize a  cors object
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
-		AllowedHeaders:   []string{"Accept", "Accept-Language", "Content-Type"},
-		AllowCredentials: true,
-		Debug:            true,
-	})
 
-	handler := c.Handler(r)
 	//listen on port 8000
-	http.ListenAndServe(":8000", handler)
+	http.ListenAndServe(":8000", handlers.CORS(header, methods, origin)(r))
 }
