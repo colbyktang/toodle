@@ -30,6 +30,12 @@ type Student struct {
 	// Lastname string             `json:"lastname,omitempty" bson:"lastname,omitempty"`
 }
 
+//Reponse data model
+type ResponseResult struct {
+	Error  string `json:"error"`
+	Result string `json:"result"`
+}
+
 //create an instance for our mongodb
 var client *mongo.Client
 
@@ -37,13 +43,38 @@ var client *mongo.Client
 func CreatePersonEnpoint(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json") //setting the header
 	var student Student
+	var result ResponseResult
 	json.NewDecoder(request.Body).Decode(&student) //Assign the json body into the local variable person
 	//open up our collection and write data into the databse
 	//if there is not a databse like this, then we will create a new ones
-	collection := client.Database("users").Collection("students")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
-	result, _ := collection.InsertOne(ctx, student)
+	collection := client.Database("users").Collection("tutors")
+	//check to see if the data is already in the databse or not
+	err := collection.FindOne(context.TODO(), bson.D{{"username", student.Username}}).Decode(&student)
+	//Analyzing the error found:
+	if err != nil {
+		//the information has not been registered in the database
+		if err.Error() == "mongo: no documents in result" {
+			//insert the user into our database
+			ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+			// result, _ := collection.InsertOne(ctx, student)
+			_, err = collection.InsertOne(ctx, student)
+			if err != nil {
+				result.Error = "Error while Creating User, Try Again"
+				json.NewEncoder(response).Encode(result)
+				return
+			}
+			result.Result = "Registration Successful"
+			json.NewEncoder(response).Encode(result)
+			return
+		}
+		result.Error = err.Error()
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+	//if the user already exist, stop and do not write the user
+	result.Result = "Username Already Exists!"
 	json.NewEncoder(response).Encode(result)
+	return
 }
 
 //function to getting documents from the collections
@@ -74,6 +105,43 @@ func getPeopleEndpoint(response http.ResponseWriter, request *http.Request) {
 	}
 
 	json.NewEncoder(response).Encode(students)
+}
+
+//Function to handle login/authentication of users
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	//setting header for the response
+	w.Header().Add("content-type", "application/json")
+	var student Student
+	json.NewDecoder(r.Body).Decode(&student) //Assign the json body into the local variable person
+	//open up our collection and write data into the databse
+	//if there is not a databse like this, then we will create a new ones
+	collection := client.Database("users").Collection("students")
+
+	var result Student
+	var res ResponseResult
+	//check to see if the data is already in the databse or not (with username)
+	err := collection.FindOne(context.TODO(), bson.D{{"username", student.Username}}).Decode(&result)
+
+	//error handling:
+	if err != nil {
+		res.Error = "Invalid Username"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+
+	//checking if password is valid:
+	err = collection.FindOne(context.TODO(), bson.D{{"password", student.Password}}).Decode(&result)
+
+	if err != nil {
+		res.Error = "Invalid password"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+
+	//if user enter correct username and password combination:
+	res.Result = "Your information is correct!"
+	json.NewEncoder(w).Encode(res)
+	return
 }
 
 //Function to create a
@@ -125,6 +193,7 @@ func main() {
 
 	//define a path that would lead the function
 	r.HandleFunc("/register", CreatePersonEnpoint).Methods("POST") //create a collection in the databse
+	r.HandleFunc("/login", LoginHandler).Methods("POST")           //handling login request from the front-end.
 	r.HandleFunc("/people", getPeopleEndpoint).Methods("GET")
 
 	//listen on port 8000
