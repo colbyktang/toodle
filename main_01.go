@@ -47,7 +47,7 @@ func CreatePersonEnpoint(response http.ResponseWriter, request *http.Request) {
 	json.NewDecoder(request.Body).Decode(&student) //Assign the json body into the local variable person
 	//open up our collection and write data into the databse
 	//if there is not a databse like this, then we will create a new ones
-	collection := client.Database("users").Collection("tutors")
+	collection := client.Database("users").Collection("students")
 	//check to see if the data is already in the databse or not
 	err := collection.FindOne(context.TODO(), bson.D{{"username", student.Username}}).Decode(&student)
 	//Analyzing the error found:
