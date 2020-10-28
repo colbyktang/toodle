@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
@@ -28,6 +29,8 @@ type Student struct {
 	Email    string             `json:"email,omitempty" bson:"email,omitempty"`
 	Password string             `json:"password,omitempty" bson:"password,omitempty"`
 	// Lastname string             `json:"lastname,omitempty" bson:"lastname,omitempty"`
+	//Creating a user token
+	Token string `json:"token"`
 }
 
 //Reponse data model
@@ -138,8 +141,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Creating a token after successful login for role based examination:
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": result.Username,
+		"email":    result.Email,
+		"student":  true})
+
+	tokenString, err := token.SignedString([]byte("secret"))
+
+	if err != nil {
+		res.Error = "Error while generating token,Try again"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+
 	//if user enter correct username and password combination:
-	res.Result = "Your information is correct!"
+	// res.Result = "Your information is correct!"
+	//if every is correct, let the user in and generate a token
+	res.Result = tokenString
 	json.NewEncoder(w).Encode(res)
 	return
 }
