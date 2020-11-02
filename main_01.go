@@ -119,19 +119,53 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//open up our collection and write data into the databse
 	//if there is not a databse like this, then we will create a new ones
 	collection := client.Database("users").Collection("students")
-
+	collection_TUTOR := client.Database("users").Collection("tutors")
 	var result Student
 	var res ResponseResult
 	//check to see if the data is already in the databse or not (with username)
 	err := collection.FindOne(context.TODO(), bson.D{{"username", student.Username}}).Decode(&result)
+	err_TUTOR := collection_TUTOR.FindOne(context.TODO(), bson.D{{"username", student.Username}}).Decode(&result)
 
-	//error handling:
+	//error handling: match the user login credentials with the database
+	//if the user first is not a student, we'll check to see if they are a tutor
 	if err != nil {
+		//check if the user is a tutor:
+		//if the user is a tutor:
+		if err_TUTOR == nil {
+			//The tutor username is found in the database, now we will check the password
+			err_TUTOR = collection_TUTOR.FindOne(context.TODO(), bson.D{{"password", student.Password}}).Decode(&result)
+			//wrong password handling:
+			if err_TUTOR != nil {
+				res.Error = "Invalid password"
+				json.NewEncoder(w).Encode(res)
+				return
+			}
+			//Creating a token after successful login for role based examination:
+			//token for tutor:
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+				"username": result.Username,
+				"email":    result.Email,
+				"tutor":    true})
+
+			tokenString, errToken := token.SignedString([]byte("secret"))
+			//error handling for token false
+			if errToken != nil {
+				res.Error = "Error while generating token,Try again"
+				json.NewEncoder(w).Encode(res)
+				return
+			}
+
+			//if user enter correct username and password combination:
+			// res.Result = "Your information is correct!"
+			//if every is correct, let the user in and generate a token
+			res.Result = tokenString
+			json.NewEncoder(w).Encode(res)
+			return
+		}
 		res.Error = "Invalid Username"
 		json.NewEncoder(w).Encode(res)
 		return
 	}
-
 	//checking if password is valid:
 	err = collection.FindOne(context.TODO(), bson.D{{"password", student.Password}}).Decode(&result)
 
@@ -140,7 +174,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(res)
 		return
 	}
-
 	//Creating a token after successful login for role based examination:
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": result.Username,
