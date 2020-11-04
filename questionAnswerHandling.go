@@ -30,6 +30,15 @@ type Question struct {
 	StudentName string             `json:"studentName,omitempty" bson:"studentName,omitempty"`
 }
 
+// Struct for Answer
+type Answer struct {
+	answerID   primitive.ObjectID
+	Username   string `json:"username,omitempty" bson:"username,omitempty"`
+	Answer     string `json:"answer,omitempty" bson:"answer,omitempty"`
+	TimeStamp  string `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
+	QuestionID string `json:"questionID,omitempty" bson:"questionID,omitempty"`
+}
+
 //Server reponse format:
 type ResponseResult struct {
 	Error  string `json:"error"`
@@ -67,6 +76,7 @@ func getAndWriteQuestion(response http.ResponseWriter, request *http.Request) {
 
 //Function to get all question currently stored in the database:
 func getAllQuestions(response http.ResponseWriter, request *http.Request) {
+	fmt.Println("getAllQuestions()")
 	response.Header().Add("content-type", "application/json") //setting the header
 	//creating a list of class object to store all element from the databse into a list
 	var questions []Question
@@ -98,12 +108,52 @@ func getAllQuestions(response http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(response).Encode(questions)
 }
 
+//Function to get all questions from a user:
+func getAllUserQuestions(response http.ResponseWriter, request *http.Request, username string) {
+	fmt.Println("getAllUserQuestions()")
+	response.Header().Add("content-type", "application/json") //setting the header
+
+	//creating a list of class object to store all element from the databse into a list
+	var questions []Question
+
+	//connecting to the database and its collection to pull data from
+	collection := client.Database("question").Collection("Questions")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+	cursor, err := collection.Find(ctx, bson.M{"username": username})   //return everything in our collections
+
+	//Error handling the database is unable to find the requested information
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	defer cursor.Close(ctx)
+
+	//loop through the mongodb data objects and look for the data that we need
+	//append them into a list of objects
+	for cursor.Next(ctx) {
+		var question Question
+		cursor.Decode(&question)
+		questions = append(questions, question)
+	}
+
+	//error handling:
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+
+	//send them to the front end:
+	json.NewEncoder(response).Encode(questions)
+}
+
 //create an instance for our mongodb
 var client *mongo.Client
 
 //main function to handle API enpoints and connect services to handle the request
 func main() {
-	fmt.Println("Starting the application...")
+	fmt.Println("Starting the question/answer listener...")
 	// //establish a connection to a mongodb client
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
 	client, _ = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
