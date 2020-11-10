@@ -20,7 +20,7 @@ import (
 
 //A class structure for question
 type Question struct {
-	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id.omitempty"`
+	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Topic       string             `json:"topic,omitempty" bson:"topic,omitempty"`
 	Description string             `json:"description,omitempty" bson:"description,omitempty"`
 	Course      string             `json:"course,omitempty" bson:"course,omitempty"`
