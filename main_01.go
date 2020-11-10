@@ -43,7 +43,7 @@ type ResponseResult struct {
 var client *mongo.Client
 
 //Function to write new data into the database
-func CreatePersonEnpoint(response http.ResponseWriter, request *http.Request) {
+func CreatePersonEndpoint(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json") //setting the header
 	var student Student
 	var result ResponseResult
@@ -331,8 +331,8 @@ func main() {
 	origin := handlers.AllowedOrigins([]string{"*"})
 
 	//define a path that would lead the function
-	r.HandleFunc("/register", CreatePersonEnpoint).Methods("POST") //create a collection in the databse
-	r.HandleFunc("/login", LoginHandler).Methods("POST")           //handling login request from the front-end.
+	r.HandleFunc("/register", CreatePersonEndpoint).Methods("POST") //create a collection in the databse
+	r.HandleFunc("/login", LoginHandler).Methods("POST")            //handling login request from the front-end.
 	r.HandleFunc("/people", getPeopleEndpoint).Methods("GET")
 
 	//listen on port 8000
