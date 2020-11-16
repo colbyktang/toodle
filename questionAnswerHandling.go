@@ -28,6 +28,7 @@ type Question struct {
 	Status      string             `json:"status,omitempty" bson:"status,omitempty"`
 	TimeStamp   string             `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
 	StudentName string             `json:"studentName,omitempty" bson:"studentName,omitempty"`
+	StudentID   string             `json:"student_ID,omitempty" bson:"student_ID,omitempty"`
 }
 
 // Struct for Answer
