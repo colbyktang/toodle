@@ -148,6 +148,43 @@ func getAllUserQuestions(response http.ResponseWriter, request *http.Request, us
 	json.NewEncoder(response).Encode(questions)
 }
 
+//Function to get a question type based on the user id from the database:
+func getQuestionFromParams(response http.ResponseWriter, request *http.Request) {
+	//Setting the header:
+	response.Header().Add("content-type", "application/json")
+	params := mux.Vars(request)
+	//creating a list of class object to store all element from the databse into a list
+	var questions []Question
+	//connecting to the databse and its collection to pull data from
+	collection := client.Database("question").Collection("Questions")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+	//rettrieve any collections that matchs the student_id that was sent in from the url parameter
+	cursor, err := collection.Find(ctx, bson.M{"student_ID": params["studentID"]})
+	//Error handling the database is unable to find the requested information
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	defer cursor.Close(ctx)
+	//loop through the mongodb data objects and look for the data that we need to find
+	//append them into a list of objects
+	for cursor.Next(ctx) {
+		var question Question
+		cursor.Decode(&question)
+		questions = append(questions, question)
+	}
+	//error handling:
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	//send them to the front end:
+	json.NewEncoder(response).Encode(questions)
+
+}
+
 //create an instance for our mongodb
 var client *mongo.Client
 
@@ -187,6 +224,7 @@ func main() {
 	r.HandleFunc("/question", getAndWriteQuestion).Methods("POST") //create a collection in the databse
 	// r.HandleFunc("/login", LoginHandler).Methods("POST")           //Authenticate users already registered in the database
 	r.HandleFunc("/getAllQuestions", getAllQuestions).Methods("GET")
+	r.HandleFunc("/getThisQuestion/{studentID}", getQuestionFromParams).Methods("GET") //Function to retrieve a question based on the user_id.
 	//listen on port 8000
 	http.ListenAndServe(":8080", handlers.CORS(header, methods, origin)(r))
 }
