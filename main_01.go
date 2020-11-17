@@ -144,6 +144,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			//token for tutor:
 			token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 				"username": result.Username,
+				"id":       result.ID,
 				"email":    result.Email,
 				"tutor":    true})
 
@@ -179,6 +180,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//Creating a token after successful login for role based examination:
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": result.Username,
+		"id":       result.ID,
 		"email":    result.Email,
 		"student":  true})
 
