@@ -33,8 +33,12 @@ type Question struct {
 
 // Struct for Answer
 type Answer struct {
-	answerID   primitive.ObjectID
-	Username   string `json:"username,omitempty" bson:"username,omitempty"`
+	AnswerID    primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	StudentID   string             `json:"studentID,omitempty" bson:"studentID,omitempty"`
+	StudentName string             `json:"studentName,omitempty" bson:"studentName,omitempty"`
+	TutorID     string             `json:"tutorID,omitempty" bson:"tutorID,omitempty"`
+	TutorName   string             `json:"tutorName,omitempty" bson:"tutorName,omitempty"`
+	// Username   string             `json:"username,omitempty" bson:"username,omitempty"`
 	Answer     string `json:"answer,omitempty" bson:"answer,omitempty"`
 	TimeStamp  string `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
 	QuestionID string `json:"questionID,omitempty" bson:"questionID,omitempty"`
@@ -186,6 +190,72 @@ func getQuestionFromParams(response http.ResponseWriter, request *http.Request) 
 
 }
 
+//Function to create an answer object:
+func createAnswerObject(response http.ResponseWriter, request *http.Request) {
+	//setting the header:
+	response.Header().Add("content-type", "application/json")
+	var answer Answer
+	var result ResponseResult
+
+	//decode the request and store the information into the database:
+	json.NewDecoder(request.Body).Decode(&answer)
+	//open up the collection and write data into the database
+	//if there is not already a database, create a new databse and write it to the db
+	collection := client.Database("answer").Collection("Answers")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return the error
+	//write the answer object into the datbase:
+	_, err := collection.InsertOne(ctx, answer)
+	//error handling:
+	if err != nil {
+		result.Error = "Error while storing Answer, Try Again"
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+
+	result.Result = "Question stored"
+	json.NewEncoder(response).Encode(result)
+	return
+}
+
+//function to get the answer objects using a question_id
+func getAnswerFromParams(response http.ResponseWriter, request *http.Request) {
+	//setting the header for the database:
+	response.Header().Add("content-type", "application/json")
+	//getting the question parameters from the api url
+	params := mux.Vars(request)
+	//creating a list to store all element of answer from the database
+	var answers []Answer
+	//connecting the database
+	collection := client.Database("answer").Collection("Answers")
+	//waiting time until ready to return error
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//retrieve any collection that matchs the question id sent in from the API url
+	cursor, err := collection.Find(ctx, bson.M{"questionID": params["question_id"]})
+	//error handling if the database cannot find the answer object
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	defer cursor.Close(ctx)
+	//loop through the mongodb data objects and look for the data that we need to find
+	//append them into a list of objects
+	for cursor.Next(ctx) {
+		var answer Answer
+		cursor.Decode(&answer)
+		answers = append(answers, answer)
+	}
+	//error handling
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	//send the request to the front end
+	json.NewEncoder(response).Encode(answers)
+
+} //end of getAnswerFromParams
+
 //create an instance for our mongodb
 var client *mongo.Client
 
@@ -226,6 +296,10 @@ func main() {
 	// r.HandleFunc("/login", LoginHandler).Methods("POST")           //Authenticate users already registered in the database
 	r.HandleFunc("/getAllQuestions", getAllQuestions).Methods("GET")
 	r.HandleFunc("/getThisQuestion/{studentID}", getQuestionFromParams).Methods("GET") //Function to retrieve a question based on the user_id.
+	//Function to write the answer object into the database
+	r.HandleFunc("/answer", createAnswerObject).Methods("POST")
+	//Endpoints to get a particular questions using a question ID
+	r.HandleFunc("/getThisAnswer/{question_id}", getAnswerFromParams).Methods("GET")
 	//listen on port 8000
 	http.ListenAndServe(":8080", handlers.CORS(header, methods, origin)(r))
 }
