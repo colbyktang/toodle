@@ -1,30 +1,31 @@
 {
   "files": {
-    "main.css": "/static/css/main.24721f6d.chunk.css",
-    "main.js": "/static/js/main.58d5607e.chunk.js",
-    "main.js.map": "/static/js/main.58d5607e.chunk.js.map",
+    "main.css": "/static/css/main.3a18acf6.chunk.css",
+    "main.js": "/static/js/main.ecbbc04f.chunk.js",
+    "main.js.map": "/static/js/main.ecbbc04f.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.d4dc386d.js",
     "runtime-main.js.map": "/static/js/runtime-main.d4dc386d.js.map",
-    "static/js/2.100d8abc.chunk.js": "/static/js/2.100d8abc.chunk.js",
-    "static/js/2.100d8abc.chunk.js.map": "/static/js/2.100d8abc.chunk.js.map",
+    "static/js/2.427c96f2.chunk.js": "/static/js/2.427c96f2.chunk.js",
+    "static/js/2.427c96f2.chunk.js.map": "/static/js/2.427c96f2.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.1d9b5288ef2303a5e5917340ba952646.js": "/precache-manifest.1d9b5288ef2303a5e5917340ba952646.js",
+    "precache-manifest.776dc81410869a39dbbeae208e8755b5.js": "/precache-manifest.776dc81410869a39dbbeae208e8755b5.js",
     "service-worker.js": "/service-worker.js",
-    "static/css/main.24721f6d.chunk.css.map": "/static/css/main.24721f6d.chunk.css.map",
-    "static/js/2.100d8abc.chunk.js.LICENSE.txt": "/static/js/2.100d8abc.chunk.js.LICENSE.txt",
+    "static/css/main.3a18acf6.chunk.css.map": "/static/css/main.3a18acf6.chunk.css.map",
+    "static/js/2.427c96f2.chunk.js.LICENSE.txt": "/static/js/2.427c96f2.chunk.js.LICENSE.txt",
     "static/media/Best-Programming-Languages-to-Start-Learning-Today.jpg": "/static/media/Best-Programming-Languages-to-Start-Learning-Today.7b8d9a65.jpg",
     "static/media/Competitive-Programming-1.jpg": "/static/media/Competitive-Programming-1.096339a2.jpg",
     "static/media/download.jpeg": "/static/media/download.49b36068.jpeg",
     "static/media/userPage.css": "/static/media/edcation02.a9c34b22.jpeg",
     "static/media/favicon.ico": "/static/media/favicon.9c77ce03.ico",
     "static/media/Welcome.css": "/static/media/img02.d9254df4.jpg",
+    "static/media/placeHolderPic.png": "/static/media/placeHolderPic.4323c7f5.png",
     "static/media/placeholder.png": "/static/media/placeholder.76b2bfd3.png",
     "static/media/studentLandingPage.css": "/static/media/student-dashboard-background.2ec03f2b.jpeg"
   },
   "entrypoints": [
     "static/js/runtime-main.d4dc386d.js",
-    "static/js/2.100d8abc.chunk.js",
-    "static/css/main.24721f6d.chunk.css",
-    "static/js/main.58d5607e.chunk.js"
+    "static/js/2.427c96f2.chunk.js",
+    "static/css/main.3a18acf6.chunk.css",
+    "static/js/main.ecbbc04f.chunk.js"
   ]
 }
