@@ -1,5 +1,6 @@
-//Go file that write user question from the front end and store it into a mongodb databse
-package main
+//Go file that write user question from the front end and store it into a mongodb database
+
+package question
 
 import (
 	"context"
@@ -11,6 +12,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/colbyktang/toodle/structs"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,7 +20,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//A class structure for question
+// Question is the main question the student asked
 type Question struct {
 	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Topic       string             `json:"topic,omitempty" bson:"topic,omitempty"`
@@ -31,7 +33,7 @@ type Question struct {
 	StudentID   string             `json:"student_ID,omitempty" bson:"student_ID,omitempty"`
 }
 
-// Struct for Answer
+// Answer is the replies to the main question the student asked
 type Answer struct {
 	AnswerID    primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	StudentID   string             `json:"studentID,omitempty" bson:"studentID,omitempty"`
@@ -44,17 +46,11 @@ type Answer struct {
 	QuestionID string `json:"questionID,omitempty" bson:"questionID,omitempty"`
 }
 
-//Server reponse format:
-type ResponseResult struct {
-	Error  string `json:"error"`
-	Result string `json:"result"`
-}
-
-//Function to read and write user question from the front end
+// Function to read and write user question from the front end
 func getAndWriteQuestion(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json") //setting the header
 	var question Question
-	var result ResponseResult
+	var result structs.ResponseResult
 	//Decode the request information and assign it into a local variable
 	json.NewDecoder(request.Body).Decode(&question)
 	//open up our collection and write data into the databse
@@ -195,7 +191,7 @@ func createAnswerObject(response http.ResponseWriter, request *http.Request) {
 	//setting the header:
 	response.Header().Add("content-type", "application/json")
 	var answer Answer
-	var result ResponseResult
+	var result structs.ResponseResult
 
 	//decode the request and store the information into the database:
 	json.NewDecoder(request.Body).Decode(&answer)
@@ -261,22 +257,13 @@ var client *mongo.Client
 
 //main function to handle API enpoints and connect services to handle the request
 func main() {
+
 	fmt.Println("Starting the question/answer listener...")
+
 	// //establish a connection to a mongodb client
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
 	client, _ = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
-	// err = client.Connect(ctx)
-	// if err != nil {
-	// 	//print out the error
-	// 	log.Fatal(err)
-	// }
-	//disconnect from the database
-	// defer client.Disconnect(ctx)
-
-	// err = client.Ping(ctx, readpref.Primary())
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	fmt.Println("Established a connection to MongoDB on port 27017.")
 
 	//checking for what kind of database that we have in the server
 	database, err := client.ListDatabaseNames(ctx, bson.M{})
@@ -300,6 +287,9 @@ func main() {
 	r.HandleFunc("/answer", createAnswerObject).Methods("POST")
 	//Endpoints to get a particular questions using a question ID
 	r.HandleFunc("/getThisAnswer/{question_id}", getAnswerFromParams).Methods("GET")
-	//listen on port 8000
+	//listen on port 8080
+	fmt.Println("Finished setting up!")
+	fmt.Println("Listening on port 8090...")
+
 	http.ListenAndServe(":8080", handlers.CORS(header, methods, origin)(r))
 }
