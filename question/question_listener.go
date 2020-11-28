@@ -1,6 +1,6 @@
 //Go file that write user question from the front end and store it into a mongodb database
 
-package question
+package main
 
 import (
 	"context"
@@ -213,6 +213,121 @@ func createAnswerObject(response http.ResponseWriter, request *http.Request) {
 	return
 }
 
+//Function to upate a question status:
+func updateQuestionStatus(response http.ResponseWriter, request *http.Request) {
+	//setting the header
+	response.Header().Add("content-type", "application/json")
+	// //Creating an instance of the question object
+	// var result ResponseResult
+
+	//get the question id from the parameters:
+	params := mux.Vars(request)
+	//getting the database info
+	database := client.Database("question")
+	quesCollection := database.Collection("Questions")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+
+	id, _ := primitive.ObjectIDFromHex(params["question_id"])
+
+	result_1, err := quesCollection.UpdateOne(
+		ctx,
+		bson.M{"_id": id},
+		bson.D{
+			{"$set", bson.D{{"status", params["status"]}}},
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+
+	}
+
+	fmt.Printf("Updated %v Documents! \n", result_1.ModifiedCount)
+} //end of updateQuestionStatus()
+
+//Function to return all active question currently stored in the database:
+func getActiveQuestions(response http.ResponseWriter, request *http.Request) {
+	//setting the header:
+	response.Header().Add("content-type", "application/json")
+	//create a list of all active question to be returned back to the front end
+	var questions []Question
+	//array of all possible active question status: new, open, pending
+	statusArray := []string{"new", "open", "pending"}
+	//connecting to the mongodb database clients:
+	collection := client.Database("question").Collection("Questions")
+	//waiting time until returns error
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//finding the documents with active status:
+	cursor, err := collection.Find(ctx, bson.M{"status": bson.M{"$in": statusArray}})
+	//Error handling the database is unable to find the requested information
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		fmt.Println(err)
+		return
+	}
+
+	defer cursor.Close(ctx)
+
+	//loop through the mongodb objects that we have found and append them into a response objects that
+	//would be sent out to the Front end:
+	for cursor.Next(ctx) {
+		var question Question
+		cursor.Decode(&question)
+		questions = append(questions, question)
+	}
+
+	//error handling: unable to write objects into a response
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(questions)
+	//if everything works out fine, send the package to the front end:
+	json.NewEncoder(response).Encode(questions)
+} //end of getActiveQuestions()
+
+//Function to get all resolved question from the database:
+func getAllResolvedQuestions(response http.ResponseWriter, request *http.Request) {
+	//settting the header:
+	response.Header().Add("content-type", "application/json")
+	//creating an instance of the question object
+	var questions []Question
+	//mongodb connection:
+	collection := client.Database("question").Collection("Questions")
+	//wainting time until the returns a error
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//finding the resolved documents in the db
+	cursor, err := collection.Find(ctx, bson.M{"status": "closed"})
+	//error handling if db cannot find the documents:
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		fmt.Println(err)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	//loop through the mongodb objects and add them into an array as a server response
+	for cursor.Next(ctx) {
+		var question Question
+		cursor.Decode(&question)
+		questions = append(questions, question)
+	}
+
+	//error handling if we cannot add the object into the responsce array
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		fmt.Println(err)
+		return
+	}
+
+	//send the response array to the questions
+	json.NewEncoder(response).Encode(questions)
+} //end of getAllResolvedQuestions()
+
 //function to get the answer objects using a question_id
 func getAnswerFromParams(response http.ResponseWriter, request *http.Request) {
 	//setting the header for the database:
@@ -287,9 +402,15 @@ func main() {
 	r.HandleFunc("/answer", createAnswerObject).Methods("POST")
 	//Endpoints to get a particular questions using a question ID
 	r.HandleFunc("/getThisAnswer/{question_id}", getAnswerFromParams).Methods("GET")
+	//Endpoints to update the status of the questions using a question ID
+	r.HandleFunc("/updateQuestionStatus/{question_id}/{status}", updateQuestionStatus).Methods("POST")
+	//Endpoints to get just active question and display them onto the front end
+	r.HandleFunc("/getAllActiveQuestion", getActiveQuestions).Methods("GET")
+	//Endpoints to get all resolved question:
+	r.HandleFunc("/getAllResolvedQuestions", getAllResolvedQuestions).Methods("GET")
 	//listen on port 8080
 	fmt.Println("Finished setting up!")
-	fmt.Println("Listening on port 8090...")
+	fmt.Println("Listening on port 8080...")
 
 	http.ListenAndServe(":8080", handlers.CORS(header, methods, origin)(r))
 }
