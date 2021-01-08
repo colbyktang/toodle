@@ -1,7 +1,7 @@
-// Go file that would connect to a mongodb database and perform CRUD operation
-// JSON - for the browser to understand
-// BSON - for mongodb data to understand
-// Listens on port 8000, mongodb listens on 27017
+/* Go file that would connect to a mongodb database and perform CRUD operation
+JSON - for the browser to understand
+BSON - for mongodb data to understand
+Listens on port 8000, mongodb listens on 27017 */
 package main
 
 import (
@@ -10,7 +10,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/colbyktang/toodle/structs"
 	"github.com/dgrijalva/jwt-go"
@@ -67,6 +70,63 @@ func RegisterUser(response http.ResponseWriter, request *http.Request) {
 	result.Result = "Username Already Exists!"
 	json.NewEncoder(response).Encode(result)
 	return
+}
+
+/* Function to update the user account based on the api request from the Front End */
+func updateUserAccount(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("content-type", "application/json") //setting the header
+	var student structs.Student
+	var res structs.ResponseResult
+	json.NewDecoder(request.Body).Decode(&student)
+	/* Getting the user id from the url and convert it into a hex id */
+	params := mux.Vars(request)
+	objID, err := primitive.ObjectIDFromHex(params["userID"])
+
+	if err != nil {
+		fmt.Println("Objectid from hex Error", err)
+	} else {
+		fmt.Println("Objectid from hex", objID)
+	}
+
+	/* Mongodb client connection */
+
+	collection := client.Database("users").Collection("students")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	filter := bson.M{"_id": bson.M{"$eq": objID}} //find the document based on the id from the url param
+	update := bson.M{"$set": bson.M{              //update the fields accordingly
+		"username": student.Username,
+		"email":    student.Email,
+		"password": student.Password,
+	},
+	}
+
+	// Call the driver's UpdateMany() method and pass filter and update to it
+	result, err := collection.UpdateMany(
+		ctx,
+		filter,
+		update,
+	)
+
+	//error checking:
+	if err != nil {
+		res.Error = "Error updating user info, please contact system administration"
+		json.NewEncoder(response).Encode(res)
+		fmt.Println("UpdateMany() error")
+		return
+
+	}
+
+	fmt.Println("UpdateMany() result:", result)
+	fmt.Println("UpdateMany() result TYPE:", reflect.TypeOf(result))
+	fmt.Println("UpdateMany() result MatchedCount:", result.MatchedCount)
+	fmt.Println("UpdateMany() result ModifiedCount:", result.ModifiedCount)
+	fmt.Println("UpdateMany() result UpsertedCount:", result.UpsertedCount)
+	fmt.Println("UpdateMany() result UpsertedID:", result.UpsertedID)
+	res.Result = "Account Updated"
+	json.NewEncoder(response).Encode(res)
+	return
+
 }
 
 // GetUsers gets documents from collections
@@ -213,6 +273,7 @@ func main() {
 	r.HandleFunc("/register", RegisterUser).Methods("POST") //create a collection in the databse
 	r.HandleFunc("/login", LoginUser).Methods("POST")       //handling login request from the front-end.
 	r.HandleFunc("/people", GetUsers).Methods("GET")
+	r.HandleFunc("/updateUser/{userID}", updateUserAccount).Methods("POST")
 	fmt.Println("Finished setting up!")
 	fmt.Println("Listening on port 8000...")
 
