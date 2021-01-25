@@ -1,31 +1,31 @@
 {
   "files": {
-    "main.css": "/static/css/main.e6db2ea0.chunk.css",
-    "main.js": "/static/js/main.677d2511.chunk.js",
-    "main.js.map": "/static/js/main.677d2511.chunk.js.map",
+    "main.css": "/static/css/main.6a83fa5c.chunk.css",
+    "main.js": "/static/js/main.3a89a1f4.chunk.js",
+    "main.js.map": "/static/js/main.3a89a1f4.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.d4dc386d.js",
     "runtime-main.js.map": "/static/js/runtime-main.d4dc386d.js.map",
-    "static/js/2.ab3b0da5.chunk.js": "/static/js/2.ab3b0da5.chunk.js",
-    "static/js/2.ab3b0da5.chunk.js.map": "/static/js/2.ab3b0da5.chunk.js.map",
+    "static/js/2.be4fabef.chunk.js": "/static/js/2.be4fabef.chunk.js",
+    "static/js/2.be4fabef.chunk.js.map": "/static/js/2.be4fabef.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.8656de3ce759d7f23351e677cc57c875.js": "/precache-manifest.8656de3ce759d7f23351e677cc57c875.js",
+    "precache-manifest.788baac1a7723076a398379c397af933.js": "/precache-manifest.788baac1a7723076a398379c397af933.js",
     "service-worker.js": "/service-worker.js",
-    "static/css/main.e6db2ea0.chunk.css.map": "/static/css/main.e6db2ea0.chunk.css.map",
-    "static/js/2.ab3b0da5.chunk.js.LICENSE.txt": "/static/js/2.ab3b0da5.chunk.js.LICENSE.txt",
+    "static/css/main.6a83fa5c.chunk.css.map": "/static/css/main.6a83fa5c.chunk.css.map",
+    "static/js/2.be4fabef.chunk.js.LICENSE.txt": "/static/js/2.be4fabef.chunk.js.LICENSE.txt",
     "static/media/Best-Programming-Languages-to-Start-Learning-Today.jpg": "/static/media/Best-Programming-Languages-to-Start-Learning-Today.7b8d9a65.jpg",
     "static/media/Competitive-Programming-1.jpg": "/static/media/Competitive-Programming-1.096339a2.jpg",
+    "static/media/ToodleExample.png": "/static/media/ToodleExample.4d3fcccc.png",
     "static/media/download.jpeg": "/static/media/download.49b36068.jpeg",
     "static/media/userPage.css": "/static/media/edcation02.a9c34b22.jpeg",
     "static/media/favicon.ico": "/static/media/favicon.9c77ce03.ico",
     "static/media/Welcome.css": "/static/media/img02.d9254df4.jpg",
     "static/media/placeHolderPic.png": "/static/media/placeHolderPic.4323c7f5.png",
-    "static/media/placeholder.png": "/static/media/placeholder.76b2bfd3.png",
     "static/media/studentLandingPage.css": "/static/media/student-dashboard-background.2ec03f2b.jpeg"
   },
   "entrypoints": [
     "static/js/runtime-main.d4dc386d.js",
-    "static/js/2.ab3b0da5.chunk.js",
-    "static/css/main.e6db2ea0.chunk.css",
-    "static/js/main.677d2511.chunk.js"
+    "static/js/2.be4fabef.chunk.js",
+    "static/css/main.6a83fa5c.chunk.css",
+    "static/js/main.3a89a1f4.chunk.js"
   ]
 }
