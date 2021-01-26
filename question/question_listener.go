@@ -328,6 +328,112 @@ func getAllResolvedQuestions(response http.ResponseWriter, request *http.Request
 	json.NewEncoder(response).Encode(questions)
 } //end of getAllResolvedQuestions()
 
+//Function to get all answers provided by the this tutor using the tutor_id
+func getThisTutorAnswers(response http.ResponseWriter, request *http.Request) {
+	//setting the header
+	response.Header().Add("content-type", "application/json")
+	//getting the paramter from the API enpoints
+	params := mux.Vars(request)
+
+	var answers []Answer
+
+	//connecting to the database
+	collection := client.Database("answer").Collection("Answers")
+	//wating time until ready to return an error
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//retrieve the answer collection that matches the tutor_id from the parameter
+	cursor, err := collection.Find(ctx, bson.M{"tutorID": params["tutor_id"]})
+	//error handling
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		fmt.Println(err.Error())
+		return
+	}
+
+	defer cursor.Close(ctx)
+	//loop through the mongodb data objects and look for the data that we need to find
+	//append them into a list of objects
+	for cursor.Next(ctx) {
+		var answer Answer
+		cursor.Decode(&answer)
+		answers = append(answers, answer)
+	}
+
+	//error handling
+	if err := cursor.Err(); err != nil {
+		fmt.Println(err.Error())
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	//if no further is found, then we will send this out to the Front End
+	json.NewEncoder(response).Encode(answers)
+}
+
+//Function to get a list of quetsions based on the list of ids from the parameters
+func getQuestionsFromQuestionIDS(response http.ResponseWriter, request *http.Request) {
+	//setting the header for the databse
+	response.Header().Add("content-type", "application/json")
+	// fmt.Println(response, "Hello! Parameters: %v", request.URL.Query()["id"])
+	params, err := request.URL.Query()["id"]
+	if !err || len(params[0]) < 1 {
+		fmt.Println("Url params key is missing")
+		return
+	}
+
+	//creating a slice of question id from the array
+	qIDs := make([]primitive.ObjectID, len(params))
+	// convert the id string into the primitive objectID
+	for i := range params {
+		questionIDs, err := primitive.ObjectIDFromHex(params[i])
+		fmt.Println(questionIDs)
+		if err != nil {
+			fmt.Println(err)
+		}
+		qIDs = append(qIDs, questionIDs)
+	}
+
+	//returning a list of questions based on the list of ids
+	var questions []Question
+	//connecting to the database and find the question collection
+	collection := client.Database("question").Collection("Questions")
+	//wait time until return error
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//rettrieving any collections that matches the id sent in from the api
+	//	cursor, err := collection.Find(ctx, bson.M{"status": bson.M{"$in": statusArray}})
+	cursor, Err := collection.Find(ctx, bson.M{"_id": bson.M{"$in": qIDs}})
+
+	//error handling if the databse cannot find the object
+	if Err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + Err.Error() + `"}`))
+		fmt.Println(Err.Error())
+		return
+	}
+
+	defer cursor.Close(ctx)
+
+	//appending the question objects found from the database and put them into the question slice
+	for cursor.Next(ctx) {
+		var question Question
+		cursor.Decode(&question)
+		questions = append(questions, question)
+	}
+
+	//Error handling:
+	if append_err := cursor.Err(); append_err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + append_err.Error() + `"}`))
+		fmt.Println(append_err.Error())
+		return
+	}
+	//send the request to the front end
+	json.NewEncoder(response).Encode(questions)
+	fmt.Println(questions)
+
+}
+
 //function to get the answer objects using a question_id
 func getAnswerFromParams(response http.ResponseWriter, request *http.Request) {
 	//setting the header for the database:
@@ -408,6 +514,10 @@ func main() {
 	r.HandleFunc("/getAllActiveQuestion", getActiveQuestions).Methods("GET")
 	//Endpoints to get all resolved question:
 	r.HandleFunc("/getAllResolvedQuestions", getAllResolvedQuestions).Methods("GET")
+	//Endpoints to return all answer provided by the tutor
+	r.HandleFunc("/getAnswersByThisTutor/{tutor_id}", getThisTutorAnswers).Methods("GET")
+	//Endpoints to return all questions with a question ID
+	r.HandleFunc("/getQuestionsFromQuestionID", getQuestionsFromQuestionIDS).Methods("GET")
 	//listen on port 8080
 	fmt.Println("Finished setting up!")
 	fmt.Println("Listening on port 8080...")
