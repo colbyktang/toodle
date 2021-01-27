@@ -375,7 +375,7 @@ func getThisTutorAnswers(response http.ResponseWriter, request *http.Request) {
 func getQuestionsFromQuestionIDS(response http.ResponseWriter, request *http.Request) {
 	//setting the header for the databse
 	response.Header().Add("content-type", "application/json")
-	// fmt.Println(response, "Hello! Parameters: %v", request.URL.Query()["id"])
+	fmt.Println(response, "Hello! Parameters: %v", request.URL.Query()["id"])
 	params, err := request.URL.Query()["id"]
 	if !err || len(params[0]) < 1 {
 		fmt.Println("Url params key is missing")
