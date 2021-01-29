@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/colbyktang/toodle/structs"
 	"github.com/dgrijalva/jwt-go"
@@ -28,6 +29,44 @@ import (
 // Create an instance for Mongodb
 var client *mongo.Client
 
+//Function to hash and salt a password
+//What is salt? A cryptographic salt is made up of random bits added to each password instance before its hashing. Salts create unique passwords even in the instance of two users choosing the same passwords
+//What is hasing? When a password has been “hashed” it means it has been turned into a scrambled representation of itself. A user's password is taken and – using a key known to the site – the hash value is derived from the combination of both the password and the key, using a set algorithm.
+func hashAndSalt(pwd []byte) string {
+	//Use GenerateFromPassword to hash and salt a pwd
+	//MinCost is just an interger constant provided by the bycrypt
+	//package along with DefaultCost and MaxCost.
+	//The cost can be any value and it should not be lower than MinCost(4)
+
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	//error handling
+	if err != nil {
+		log.Println(err)
+	}
+
+	//GenerateFromPassword returns a byte slice so we need to
+	//convert the bytes into the a string and return it
+	return string(hash)
+}
+
+// // Function to verify password:
+// //CompareHashAndPassword compares a bcrypt hashed password with its possible plaintext equivalent. Returns nil on success, or an error on failure.
+// //Using CompareHashAndPassword we can create a function that returns a boolean to let us know whether or not the passwords match.
+// func comparePassword(hashedPwd string, plainPwd []byte) bool {
+// 	//Since we will be getting the hashed password from the DB
+// 	//will be a string so we will need to convert it into a byte slice
+// 	byteHash := []byte(hashedPwd)
+
+// 	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+// 	//error handling
+// 	if err != nil {
+// 		log.Println(err)
+// 		return false
+// 	}
+
+// 	return true
+// }
+
 // RegisterUser writes new user data into the database
 func RegisterUser(response http.ResponseWriter, request *http.Request) {
 
@@ -36,7 +75,8 @@ func RegisterUser(response http.ResponseWriter, request *http.Request) {
 	var student structs.Student
 	var result structs.ResponseResult
 	json.NewDecoder(request.Body).Decode(&student) //Assign the json body into the local variable person
-
+	//Encrypt the password using Salt and Hashes
+	student.Password = hashAndSalt([]byte(student.Password))
 	// open up collection and write data
 	// create a new database if it doesn't already exist
 	collection := client.Database("users").Collection("students")
@@ -165,6 +205,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "application/json")
 	var student structs.Student
 	json.NewDecoder(r.Body).Decode(&student) //Assign the json body into the local variable person
+
 	//open up our collection and write data into the databse
 	//if there is not a databse like this, then we will create a new ones
 	collection := client.Database("users").Collection("students")
@@ -181,7 +222,8 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		//if the user is a tutor:
 		if errTutor == nil {
 			//The tutor username is found in the database, now we will check the password
-			errTutor = collectionTutor.FindOne(context.TODO(), bson.D{{"password", student.Password}}).Decode(&result)
+			// errTutor = collectionTutor.FindOne(context.TODO(), bson.D{{"password", student.Password}}).Decode(&result)
+			errTutor = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(student.Password))
 			//wrong password handling:
 			if errTutor != nil {
 				res.Error = "Invalid password"
@@ -218,7 +260,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//checking if password is valid:
-	err = collection.FindOne(context.TODO(), bson.D{{"password", student.Password}}).Decode(&result)
+	err = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(student.Password))
 
 	if err != nil {
 		res.Error = "Invalid password"
@@ -246,6 +288,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	//if every is correct, let the user in and generate a token
 	res.Result = tokenString
 	json.NewEncoder(w).Encode(res)
+	fmt.Println(result.Username)
 	return
 }
 
