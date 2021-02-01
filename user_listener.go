@@ -72,7 +72,7 @@ func RegisterUser(response http.ResponseWriter, request *http.Request) {
 
 	// Setting the header
 	response.Header().Add("content-type", "application/json")
-	var student structs.Student
+	var student structs.User
 	var result structs.ResponseResult
 	json.NewDecoder(request.Body).Decode(&student) //Assign the json body into the local variable person
 	//Encrypt the password using Salt and Hashes
@@ -115,7 +115,7 @@ func RegisterUser(response http.ResponseWriter, request *http.Request) {
 /* Function to update the user account based on the api request from the Front End */
 func updateUserAccount(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json") //setting the header
-	var student structs.Student
+	var student structs.User
 	var res structs.ResponseResult
 	json.NewDecoder(request.Body).Decode(&student)
 	/* Getting the user id from the url and convert it into a hex id */
@@ -172,7 +172,7 @@ func updateUserAccount(response http.ResponseWriter, request *http.Request) {
 // GetUsers gets documents from collections
 func GetUsers(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json") //setting the header
-	var students []structs.Student                            //creating a slice of the struct to store data from the database
+	var students []structs.User                               //creating a slice of the struct to store data from the database
 	collection := client.Database("acme").Collection("posts")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
 	cursor, err := collection.Find(ctx, bson.M{})                       //return everything in our collections
@@ -184,7 +184,7 @@ func GetUsers(response http.ResponseWriter, request *http.Request) {
 	defer cursor.Close(ctx)
 	//loop through the mongodb data objects and look for the data that we need
 	for cursor.Next(ctx) {
-		var student structs.Student
+		var student structs.User
 		cursor.Decode(&student)
 		students = append(students, student)
 
@@ -203,14 +203,14 @@ func GetUsers(response http.ResponseWriter, request *http.Request) {
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	//setting header for the response
 	w.Header().Add("content-type", "application/json")
-	var student structs.Student
+	var student structs.User
 	json.NewDecoder(r.Body).Decode(&student) //Assign the json body into the local variable person
 
 	//open up our collection and write data into the databse
 	//if there is not a databse like this, then we will create a new ones
 	collection := client.Database("users").Collection("students")
 	collectionTutor := client.Database("users").Collection("tutors")
-	var result structs.Student
+	var result structs.User
 	var res structs.ResponseResult
 	//check to see if the data is already in the databse or not (with username)
 	err := collection.FindOne(context.TODO(), bson.D{{"username", student.Username}}).Decode(&result)
