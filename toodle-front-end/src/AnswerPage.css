@@ -1,0 +1,52 @@
+.Topic{
+    position: relative;
+    text-align: left;
+    font-weight: 100px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    margin-left: 10px;
+    
+}
+
+.Description{
+    position: relative;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    text-align: left;
+    padding-top: 50px;
+    
+}
+
+.Description span{
+    position: relative;
+    margin-left: 10px;
+}
+
+.case-info {
+    position: relative;
+    display: inline;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    padding-bottom: 50px;
+    font-size: 25px;
+}
+
+.info1{
+    float: left;
+}
+
+.info2{
+    float: right;
+    margin-right: 10px;
+}
+
+#info1, #info2{
+    display: inline;
+}
+
+.answer-question{
+    position: relative;
+    top: 300px;
+}
+
+.answerBox{
+    height: 500px;
+    width: 1000px;
+}

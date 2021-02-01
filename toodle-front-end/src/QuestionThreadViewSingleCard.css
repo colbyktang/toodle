@@ -1,0 +1,27 @@
+.id-header >h1{
+    font-size: 30px;
+    font-weight: 540;
+    font-family: Arial, Helvetica, sans-serif;
+    
+}
+.case-details-header{
+    padding: 20px;
+    background-color: #f9f9f9
+}
+
+.case-details-header >b{
+    font-size: 25px;
+    
+}
+.topic-student-name-container{
+    display: inline-block;
+    margin-right: 10px;
+    width: 500px;
+}
+
+.status-time-container{
+    display: inline-block;
+    width: 200px;
+    float: right;
+    padding-right: 50px;
+}

@@ -1,0 +1,60 @@
+.navBar{
+    background: transparent;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+    padding-right: 20px;
+    padding-left: 20px;
+}
+
+.navbarActive {
+    background: transparent;
+}
+
+ul{
+    list-style: none;
+    text-decoration: none;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+   
+}
+
+nav ul li{
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.links{
+    /* We first create a flex layout context */
+    display: flex;
+    /* Then we define the flow direction and if we allow the items to wrap */
+    flex-flow: row wrap;
+    /* Then we define how is distributed the remaining space */
+    justify-content: space-around;
+}
+.links a{
+    margin: 10px;
+    padding: 20px;
+    text-decoration: none;
+    color: white;
+    font-size: 20px;
+}   
+
+.button a {
+    background: transparent;
+    border-radius: 12px;
+    border: 2px solid #e7e7e7;    
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    float: right;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
