@@ -1,0 +1,47 @@
+.main-Container{
+    padding-top: 100px;
+    padding-bottom: 270px;
+    /* background: linear-gradient(
+        rgba(60, 60, 60, 0.5), 
+        rgba(60, 60, 60, 0.5)
+   ); */
+
+    background-size: 85rem;
+}
+
+.head_01 {
+    font-size: 21px;
+    font-weight: 500;
+    color: black;
+    margin-right: 3em;
+    margin-left: 3em;
+    text-align: center;
+}
+
+
+
+/* //Button */
+.btn_01 {
+  font-size: 21px;
+  padding: 5px 20px;
+  border: 0;
+  background-color: #3498db;
+  color: white;
+  border-radius: 3px;
+  transition: all 250ms ease-in-out;
+  cursor: pointer;
+  /* &:hover {
+    background-color: #2386c8;
+  }
+  &:focus {
+    outline: none;
+  } */
+}
+
+.btn_01:hover{
+  background-color: #2386c8;
+}
+
+.btn_01:focus{
+  outline: none;
+}

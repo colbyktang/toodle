@@ -1,0 +1,57 @@
+.admin-page-quick-links{
+    float:right;
+    padding-right: 10px;
+}
+
+.cardView02{
+    float: right;
+    padding-right: 130px;
+}
+
+.cardView01{
+    float: left;
+    padding-left: 20px;
+}
+
+.quick-link-icon{
+    --button-size: calc(var(--nav-size) * 1);
+    width: var(--button-size);
+    height: var(--button-size);
+    background-color: #e2ebf0;
+    border-radius: 50%;
+    padding: 5px;
+    margin: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.quick-link-icon svg{
+    fill: #484a4d;
+}
+
+.add-remove-functions{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 25px;
+}
+
+.add-tutors-div span{
+    text-align: center;
+    padding-right: 30px;
+}
+
+.add-professor-div span{
+    text-align: center;
+    padding-right: 30px;
+}
+
+.remove-user-div span{
+    text-align: center;
+    padding-right: 30px;
+}
+
+.knowledge-tools span{
+    text-align: center;
+    padding-right: 30px;
+}

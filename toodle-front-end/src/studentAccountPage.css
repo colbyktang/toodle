@@ -1,0 +1,109 @@
+.account-page-header{
+    font-family: 'Google Sans',Roboto,Arial,sans-serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 2.25rem;
+    hyphens: auto;
+    word-break: break-word;
+    word-wrap: break-word;
+    color: #202124;
+    text-align: center;
+}
+
+.basic-info-h2 h2{
+    font-family: 'Google Sans',Roboto,Arial,sans-serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 2.25rem;
+    hyphens: auto;
+    word-break: break-word;
+    word-wrap: break-word;
+    color: #202124;
+    padding-left: 30px;
+}
+
+
+.basic-info-h2{
+    display: inline-block;
+    margin-right: 10px;
+    width: 500px;
+}
+
+.basic-info-contents{
+    display: inline-block;
+    width: 100px;
+}
+
+.username-span{
+    margin-bottom: 10px;    
+}
+
+.username-span span{
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;  
+    font-size: 20px;  
+}
+.useremail-span span{
+    overflow: hidden;
+    text-overflow: ellipsis;  
+    font-size: 20px;  
+}
+.userid-span span{
+    overflow: hidden;
+    text-overflow: ellipsis;  
+    font-size: 20px;  
+}
+.userpass-span span{
+    overflow: hidden;
+    text-overflow: ellipsis;  
+    font-size: 20px;  
+}
+.useremail-span{
+    margin-bottom: 10px;    
+}
+
+.userid-span{
+    margin-bottom: 10px;    
+}
+.userpass-span{
+    margin-bottom: 10px;    
+}
+
+.info-modified-btn{
+    float: right;
+    padding-right: 10px;
+}
+
+
+.course-subscription-info-h2{
+    display: inline-block;
+    margin-right: 10px;
+    width: 600px;
+  
+}
+
+
+.course-subscription-info-h2 h2{
+    font-family: 'Google Sans',Roboto,Arial,sans-serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 2.25rem;
+    hyphens: auto;
+    word-break: break-word;
+    word-wrap: break-word;
+    color: #202124;
+    padding-left: 30px;
+}
+
+.course-subscription-info-h2 span{
+    font-family: 'Google Sans',Roboto,Arial,sans-serif;
+    padding-left: 10px;    
+}
+
+.course-info-dropdown{
+    text-align: center;
+}

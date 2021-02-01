@@ -1,0 +1,35 @@
+.Contents{
+    padding-top: 40px;
+    padding-bottom: 100px;
+}
+.Contents .Header{
+    text-align: center;
+
+}
+
+.Contents .Header h1{
+    font-size: 50px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+}
+
+.Contents .Header p {
+    font-size: 20px;
+    padding-bottom: 50px;
+}
+
+.Contents .Courses .prog-lang img{
+    width: 70%;
+    height: 70%;
+    padding-bottom: 40px;
+}
+
+.Contents .Courses{
+    display: flex;
+}
+
+.prog-lang{
+    flex: 33.33%;
+    padding: 40px;
+    text-align: center;
+}

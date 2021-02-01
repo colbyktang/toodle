@@ -1,0 +1,14 @@
+.resolved-btn{
+    font-size: 21px;
+    padding: 5px 20px;
+    border: 0;
+    background-color: green;
+    color: #fff;
+    border-radius: 3px;
+    transition: all 250ms ease-in-out;
+    cursor: pointer;
+}
+
+.resolved-btn:hover{
+    background-color: lightgreen;
+}
