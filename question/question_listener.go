@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -41,9 +42,10 @@ type Answer struct {
 	TutorID     string             `json:"tutorID,omitempty" bson:"tutorID,omitempty"`
 	TutorName   string             `json:"tutorName,omitempty" bson:"tutorName,omitempty"`
 	// Username   string             `json:"username,omitempty" bson:"username,omitempty"`
-	Answer     string `json:"answer,omitempty" bson:"answer,omitempty"`
-	TimeStamp  string `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
-	QuestionID string `json:"questionID,omitempty" bson:"questionID,omitempty"`
+	Answer         string `json:"answer,omitempty" bson:"answer,omitempty"`
+	TimeStamp      string `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
+	QuestionID     string `json:"questionID,omitempty" bson:"questionID,omitempty"`
+	QuestionStatus string `json:"question_status,omitempty" bson:"question_status,omitempty"`
 }
 
 // Function to read and write user question from the front end
@@ -192,9 +194,24 @@ func createAnswerObject(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json")
 	var answer Answer
 	var result structs.ResponseResult
-
 	//decode the request and store the information into the database:
 	json.NewDecoder(request.Body).Decode(&answer)
+	//This is how you convert a struct object into an array
+	structValues := reflect.ValueOf(answer)
+	arrayOfAnswers := make([]interface{}, structValues.NumField())
+	for i := 0; i < structValues.NumField(); i++ {
+		arrayOfAnswers[i] = structValues.Field(i).Interface()
+	}
+	questionStatus := arrayOfAnswers[len(arrayOfAnswers)-1].(string)
+	questionIDStr := arrayOfAnswers[len(arrayOfAnswers)-2].(string)
+
+	fmt.Println(questionIDStr)
+	fmt.Println(questionStatus)
+	if updateQuestionStatusUtils(questionIDStr, questionStatus) == true {
+		fmt.Println("Update status successfully")
+	} else {
+		fmt.Println("Unable to update it! Please try again!")
+	}
 	//open up the collection and write data into the database
 	//if there is not already a database, create a new databse and write it to the db
 	collection := client.Database("answer").Collection("Answers")
@@ -208,12 +225,49 @@ func createAnswerObject(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	result.Result = "Question stored"
+	result.Result = "Answer stored"
 	json.NewEncoder(response).Encode(result)
 	return
 }
 
-//Function to upate a question status:
+//Helper method to update the question status from the answer:
+func updateQuestionStatusUtils(id string, status string) bool {
+	//coverting the question id into primite object id type
+	questionID, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		//error handling
+		fmt.Println("Unable to convert question ID into ObjectID")
+		fmt.Println(err.Error())
+		return false
+	}
+
+	//getting the database info
+	database := client.Database("question")
+	questionCollection := database.Collection("Questions")
+	//waiting time until return an error
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	_, err_1 := questionCollection.UpdateOne(
+		ctx,
+		bson.M{"_id": questionID},
+		bson.D{
+			{"$set", bson.D{{"status", status}}},
+		},
+	)
+
+	//if error while updating the databse
+	if err_1 != nil {
+		fmt.Println("Unable update question status")
+		log.Fatal(err)
+		return false
+	}
+
+	//update successfully!
+	return true
+}
+
+//API Endpoints to update the question directly from the front end: (For reopening)
 func updateQuestionStatus(response http.ResponseWriter, request *http.Request) {
 	//setting the header
 	response.Header().Add("content-type", "application/json")
