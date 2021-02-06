@@ -127,9 +127,10 @@ func updateUserAccount(response http.ResponseWriter, request *http.Request) {
 	} else {
 		fmt.Println("Objectid from hex", objID)
 	}
+	//Encrypt the password using Salt and Hashes
+	student.Password = hashAndSalt([]byte(student.Password))
 
 	/* Mongodb client connection */
-
 	collection := client.Database("users").Collection("students")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
