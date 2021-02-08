@@ -170,34 +170,109 @@ func updateUserAccount(response http.ResponseWriter, request *http.Request) {
 
 }
 
-// GetUsers gets documents from collections
-func GetUsers(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("content-type", "application/json") //setting the header
-	var students []structs.User                               //creating a slice of the struct to store data from the database
-	collection := client.Database("acme").Collection("posts")
+//Helper method to get the students data information
+func getAllStudentDataUtils() []structs.User {
+	// return a struct object
+	var students []structs.User
+	//connecting to the STUDENT database:
+	collection := client.Database("users").Collection("students")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
 	cursor, err := collection.Find(ctx, bson.M{})                       //return everything in our collections
 	if err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-		return
+		fmt.Println("Unable to find the STUDENTS object")
+		log.Fatal(err)
+		return students
 	}
 	defer cursor.Close(ctx)
 	//loop through the mongodb data objects and look for the data that we need
+	//assuming we were able to collect all data from the back end.
 	for cursor.Next(ctx) {
 		var student structs.User
 		cursor.Decode(&student)
 		students = append(students, student)
-
 	}
-
+	//unable to append the students slice for the return value
 	if err := cursor.Err(); err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-		return
+		fmt.Println("Unable to append STUDENT collection into the return value")
+		log.Fatal(err)
+		return students
 	}
+	return students
+} //end of utils to get all students for admin
 
+//Helper method to get the tutor data information
+func getAllTutorDataUtils() []structs.User {
+	// return a struct object
+	var tutors []structs.User
+	//connecting to the STUDENT database:
+	collection := client.Database("users").Collection("tutors")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+	cursor, err := collection.Find(ctx, bson.M{})                       //return everything in our collections
+	if err != nil {
+		fmt.Println("Unable to find the TUTORS object")
+		log.Fatal(err)
+		return tutors
+	}
+	defer cursor.Close(ctx)
+	//loop through the mongodb data objects and look for the data that we need
+	//assuming we were able to collect all data from the back end.
+	for cursor.Next(ctx) {
+		var tutor structs.User
+		cursor.Decode(&tutor)
+		tutors = append(tutors, tutor)
+	}
+	//unable to append the students slice for the return value
+	if err := cursor.Err(); err != nil {
+		fmt.Println("Unable to append TUTORS collection into the return value")
+		log.Fatal(err)
+		return tutors
+	}
+	return tutors
+
+}
+
+// //Helper method to get the professors data information
+// func getAllProfessorsDataUtils() []structs.User {
+// 	// return a struct object
+// 	var professors []structs.User
+// 	//connecting to the STUDENT database:
+// 	collection := client.Database("users").Collection("professors")
+// 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+// 	cursor, err := collection.Find(ctx, bson.M{})                       //return everything in our collections
+// 	if err != nil {
+// 		fmt.Println("Unable to find the professors object")
+// 		log.Fatal(err)
+// 		return professors
+// 	}
+// 	defer cursor.Close(ctx)
+// 	//loop through the mongodb data objects and look for the data that we need
+// 	//assuming we were able to collect all data from the back end.
+// 	for cursor.Next(ctx) {
+// 		var professor structs.User
+// 		cursor.Decode(&professor)
+// 		professors = append(professors, professor)
+// 	}
+// 	//unable to append the students slice for the return value
+// 	if err := cursor.Err(); err != nil {
+// 		fmt.Println("Unable to append STUDENT collection into the return value")
+// 		log.Fatal(err)
+// 		return professors
+// 	}
+// 	return professors
+// }
+
+// GetUsers gets documents from collections
+func GetAllUserData(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("content-type", "application/json") //setting the header
+	var students []structs.User                               //creating a slice of the struct to store data from the database
+	var tutors []structs.User
+	// var professors []structs.User
+	students = getAllStudentDataUtils()
+	tutors = getAllTutorDataUtils()
+	// professors = getAllProfessorsDataUtils()
 	json.NewEncoder(response).Encode(students)
+	json.NewEncoder(response).Encode(tutors)
+	// json.NewEncoder(response).Encode(professors)
 }
 
 // LoginUser handles login/authentication of users
@@ -316,7 +391,7 @@ func main() {
 	//define a path that would lead the function
 	r.HandleFunc("/register", RegisterUser).Methods("POST") //create a collection in the databse
 	r.HandleFunc("/login", LoginUser).Methods("POST")       //handling login request from the front-end.
-	r.HandleFunc("/people", GetUsers).Methods("GET")
+	r.HandleFunc("/getAllUserData", GetAllUserData).Methods("GET")
 	r.HandleFunc("/updateUser/{userID}", updateUserAccount).Methods("POST")
 	fmt.Println("Finished setting up!")
 	fmt.Println("Listening on port 8000...")
