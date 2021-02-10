@@ -266,12 +266,37 @@ func GetAllUserData(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json") //setting the header
 	var students []structs.User                               //creating a slice of the struct to store data from the database
 	var tutors []structs.User
+	var res structs.ResponseResult
 	// var professors []structs.User
 	students = getAllStudentDataUtils()
 	tutors = getAllTutorDataUtils()
+	//Creating a token after successful login for role based examination:
+	userDataToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"students": students,
+		"tutors":   tutors})
+
+	userDataTokenStr, err := userDataToken.SignedString([]byte("secret"))
+
+	if err != nil {
+		res.Error = "Error while generating token,Try again"
+		json.NewEncoder(response).Encode(res)
+		return
+	}
+	res.Result = userDataTokenStr
+	json.NewEncoder(response).Encode(res)
+	// jsonString, err := jsoniter.Marshal(resDict)
+	// // fmt.Println(jsonString)
+	// if err != nil {
+	// 	fmt.Println("Unable to convert Go map into a json object")
+	// 	log.Fatal(err)
+
+	// }
+	// res.Result = jsonString
+	// json.NewEncoder(response).Encode(resDict)
+	// fmt.Println(resDict)
 	// professors = getAllProfessorsDataUtils()
-	json.NewEncoder(response).Encode(students)
-	json.NewEncoder(response).Encode(tutors)
+	// json.NewEncoder(response).Encode(students)
+	// json.NewEncoder(response).Encode(tutors)
 	// json.NewEncoder(response).Encode(professors)
 }
 
