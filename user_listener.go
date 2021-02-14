@@ -66,6 +66,50 @@ func hashAndSalt(pwd []byte) string {
 
 // 	return true
 // }
+//Function to create an admin
+func createAdmin(response http.ResponseWriter, request *http.Request) {
+	//setting the header:
+	response.Header().Add("content-type", "application/json")
+	//creating an instance of User data model and response data model
+	var admin structs.User
+	var result structs.ResponseResult
+	//Assign the request body into a local variable to then write the data into the mongodb
+	json.NewDecoder(request.Body).Decode(&admin)
+	// fmt.Println(admin.Username)
+	// fmt.Println(admin.Password)
+	//Encrypt the admin password
+	admin.Password = hashAndSalt([]byte(admin.Password))
+	//open up the collection and write data
+	//create a new database if the current database does not exist
+	collection := client.Database("users").Collection("admin")
+	//check to see if the data already exist
+	err := collection.FindOne(context.TODO(), bson.D{{"username", admin.Username}}).Decode(&admin)
+	//error handling
+	if err != nil { //no document with the same username found
+		//the information has not been registered in the database
+		if err.Error() == "mongo: no documents in result" {
+			//insert the user into our database
+			ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+			// result, _ := collection.InsertOne(ctx, student)
+			_, err = collection.InsertOne(ctx, admin)
+			if err != nil {
+				result.Error = "Error while Creating User, Try Again"
+				json.NewEncoder(response).Encode(result)
+				return
+			}
+			result.Result = "Registration Successful"
+			json.NewEncoder(response).Encode(result)
+			return
+		}
+		result.Error = err.Error()
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+	// if the user already exist, stop and do not write the user
+	result.Result = "Username Already Exists!"
+	json.NewEncoder(response).Encode(result)
+	return
+}
 
 // RegisterUser writes new user data into the database
 func RegisterUser(response http.ResponseWriter, request *http.Request) {
@@ -284,20 +328,58 @@ func GetAllUserData(response http.ResponseWriter, request *http.Request) {
 	}
 	res.Result = userDataTokenStr
 	json.NewEncoder(response).Encode(res)
-	// jsonString, err := jsoniter.Marshal(resDict)
-	// // fmt.Println(jsonString)
-	// if err != nil {
-	// 	fmt.Println("Unable to convert Go map into a json object")
-	// 	log.Fatal(err)
+}
 
-	// }
-	// res.Result = jsonString
-	// json.NewEncoder(response).Encode(resDict)
-	// fmt.Println(resDict)
-	// professors = getAllProfessorsDataUtils()
-	// json.NewEncoder(response).Encode(students)
-	// json.NewEncoder(response).Encode(tutors)
-	// json.NewEncoder(response).Encode(professors)
+//Function to authenticate the admin into the admin portal
+func LoginAdmin(w http.ResponseWriter, r *http.Request) {
+	//Setting header:
+	w.Header().Add("content-type", "application/json")
+	var admin structs.User
+	json.NewDecoder(r.Body).Decode(&admin)
+	// fmt.Println(admin.Username)
+	// fmt.Println(admin.Password)
+	//open up our collection and write data into the databse
+	//if there is not a databse like this, then we will create a new ones
+	collection := client.Database("users").Collection("admin")
+	var result structs.User
+	var res structs.ResponseResult
+	//check to see if the data is already in the database or not, check the username first
+	currentResult := collection.FindOne(context.TODO(), bson.D{{"username", admin.Username}}).Decode(&result)
+	//error handling: match the user login credentials with the database
+	if currentResult != nil {
+		res.Error = "Invalid username"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+	//check the password by hashing the plain text and match it with the hashed in the datatbase
+	currentResult = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(admin.Password))
+	if currentResult != nil {
+		res.Error = "Invalid password"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+
+	//after authentication is successful, we will send back a token to the front end
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": result.Username,
+		"id":       result.ID,
+		"userType": "admin"})
+
+	tokenString, err := token.SignedString([]byte("secret"))
+
+	if err != nil {
+		res.Error = "Error while generating token,Try again"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+
+	//if user enter correct username and password combination:
+	// res.Result = "Your information is correct!"
+	//if every is correct, let the user in and generate a token
+	res.Result = tokenString
+	json.NewEncoder(w).Encode(res)
+	// fmt.Println(result.Username)
+	return
 }
 
 // LoginUser handles login/authentication of users
@@ -418,6 +500,10 @@ func main() {
 	r.HandleFunc("/login", LoginUser).Methods("POST")       //handling login request from the front-end.
 	r.HandleFunc("/getAllUserData", GetAllUserData).Methods("GET")
 	r.HandleFunc("/updateUser/{userID}", updateUserAccount).Methods("POST")
+
+	r.HandleFunc("/registerAdmin", createAdmin).Methods("POST")
+	r.HandleFunc("/loginAdmin", LoginAdmin).Methods("POST")
+
 	fmt.Println("Finished setting up!")
 	fmt.Println("Listening on port 8000...")
 
