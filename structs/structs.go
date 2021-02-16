@@ -10,7 +10,7 @@ type User struct {
 	Password string             `json:"password,omitempty" bson:"password,omitempty"`
 
 	// Access level
-	Level uint8 `json:"level,omityempty" bson:"level,omitempty"`
+	Level uint8 `json:"level,omitempty" bson:"level,omitempty"`
 
 	//Creating a user token
 	Token string `json:"token"`

@@ -111,22 +111,34 @@ func createAdmin(response http.ResponseWriter, request *http.Request) {
 	return
 }
 
-// RegisterUser writes new user data into the database
-func RegisterUser(response http.ResponseWriter, request *http.Request) {
+// addUser writes new user data into the database
+func addUser(response http.ResponseWriter, request *http.Request) {
 
 	// Setting the header
 	response.Header().Add("content-type", "application/json")
-	var student structs.User
+	var user structs.User
 	var result structs.ResponseResult
-	json.NewDecoder(request.Body).Decode(&student) //Assign the json body into the local variable person
+	json.NewDecoder(request.Body).Decode(&user) //Assign the json body into the local variable person
 	//Encrypt the password using Salt and Hashes
-	student.Password = hashAndSalt([]byte(student.Password))
+	user.Password = hashAndSalt([]byte(user.Password))
+
 	// open up collection and write data
 	// create a new database if it doesn't already exist
+	if user.Level < 0 || user.Level > 2 {
+		result.Error = "User level is not within 0-2, Try Again"
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+
 	collection := client.Database("users").Collection("students")
+	if user.Level == 1 {
+		collection = client.Database("users").Collection("tutors")
+	} else if user.Level == 2 {
+		collection = client.Database("users").Collection("professors")
+	}
 
 	// check to see if the data is already in the database or not
-	err := collection.FindOne(context.TODO(), bson.D{{"username", student.Username}}).Decode(&student)
+	err := collection.FindOne(context.TODO(), bson.D{{"username", user.Username}}).Decode(&user)
 
 	// Analyzing the error found:
 	if err != nil {
@@ -135,7 +147,7 @@ func RegisterUser(response http.ResponseWriter, request *http.Request) {
 			//insert the user into our database
 			ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
 			// result, _ := collection.InsertOne(ctx, student)
-			_, err = collection.InsertOne(ctx, student)
+			_, err = collection.InsertOne(ctx, user)
 			if err != nil {
 				result.Error = "Error while Creating User, Try Again"
 				json.NewEncoder(response).Encode(result)
@@ -156,15 +168,85 @@ func RegisterUser(response http.ResponseWriter, request *http.Request) {
 	return
 }
 
+// Deleting a single user from the database
+func deleteUser(response http.ResponseWriter, request *http.Request) {
+	// Setting the header
+	response.Header().Add("content-type", "application/json")
+	var user structs.User
+	var result structs.ResponseResult
+	json.NewDecoder(request.Body).Decode(&user) //Assign the json body into the local variable person
+
+	// open up collection and write data
+	// create a new database if it doesn't already exist
+	collection := client.Database("users").Collection("students")
+	if user.Level == 1 {
+		collection = client.Database("users").Collection("tutors")
+	} else if user.Level == 2 {
+		collection = client.Database("users").Collection("professors")
+	}
+
+	// specify the SetCollation option to provide a collation that will ignore case for string comparisons
+	opts := options.Delete().SetCollation(&options.Collation{
+		Locale:    "en_US",
+		Strength:  1,
+		CaseLevel: false,
+	})
+
+	res, err := collection.DeleteOne(context.TODO(), bson.D{{"username", user.Username}}, opts)
+
+	if err != nil {
+		result.Error = "Cannot find user"
+		log.Fatal(err)
+		return
+	}
+
+	result.Result = fmt.Sprintf("Removed %s: %d", user.Username, res.DeletedCount)
+	return
+}
+
+/* user_type should be: STUDENT, TUTOR, PROFESSOR */
+// Deleting all the users from a collection
+func clearUserCollection(response http.ResponseWriter, request *http.Request) {
+	// Setting the header
+	response.Header().Add("content-type", "application/json")
+	var result structs.ResponseResult
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	/* Getting the user_type from the url */
+	params := mux.Vars(request)
+	usertype := params["user_type"]
+
+	// open up collection and write data
+	// create a new database if it doesn't already exist
+	collection := client.Database("users").Collection("")
+
+	if usertype == "STUDENT" {
+		collection = client.Database("users").Collection("students")
+	} else if usertype == "TUTOR" {
+		collection = client.Database("users").Collection("tutors")
+	} else if usertype == "PROFESSOR" {
+		collection = client.Database("users").Collection("professors")
+	}
+
+	if err := collection.Drop(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	result.Result = fmt.Sprintf("Removed %s: ", params["user_type"])
+	return
+}
+
+/* user_type should be: STUDENT, TUTOR, PROFESSOR */
 /* Function to update the user account based on the api request from the Front End */
-func updateUserAccount(response http.ResponseWriter, request *http.Request) {
+func updateUser(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json") //setting the header
-	var student structs.User
+	var user structs.User
 	var res structs.ResponseResult
-	json.NewDecoder(request.Body).Decode(&student)
+	json.NewDecoder(request.Body).Decode(&user)
 	/* Getting the user id from the url and convert it into a hex id */
 	params := mux.Vars(request)
 	objID, err := primitive.ObjectIDFromHex(params["userID"])
+	userType := params["user_type"]
 
 	if err != nil {
 		fmt.Println("Objectid from hex Error", err)
@@ -172,17 +254,28 @@ func updateUserAccount(response http.ResponseWriter, request *http.Request) {
 		fmt.Println("Objectid from hex", objID)
 	}
 	//Encrypt the password using Salt and Hashes
-	student.Password = hashAndSalt([]byte(student.Password))
+	user.Password = hashAndSalt([]byte(user.Password))
 
 	/* Mongodb client connection */
-	collection := client.Database("users").Collection("students")
+	// open up collection and write data
+	// create a new database if it doesn't already exist
+	collection := client.Database("users").Collection("")
+
+	if userType == "STUDENT" {
+		collection = client.Database("users").Collection("students")
+	} else if userType == "TUTOR" {
+		collection = client.Database("users").Collection("tutors")
+	} else if userType == "PROFESSOR" {
+		collection = client.Database("users").Collection("professors")
+	}
+
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
 	filter := bson.M{"_id": bson.M{"$eq": objID}} //find the document based on the id from the url param
 	update := bson.M{"$set": bson.M{              //update the fields accordingly
-		"username": student.Username,
-		"email":    student.Email,
-		"password": student.Password,
+		"username": user.Username,
+		"email":    user.Email,
+		"password": user.Password,
 	},
 	}
 
