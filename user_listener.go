@@ -113,7 +113,6 @@ func createAdmin(response http.ResponseWriter, request *http.Request) {
 
 // addUser writes new user data into the database
 func addUser(response http.ResponseWriter, request *http.Request) {
-
 	// Setting the header
 	response.Header().Add("content-type", "application/json")
 	var user structs.User
@@ -121,7 +120,6 @@ func addUser(response http.ResponseWriter, request *http.Request) {
 	json.NewDecoder(request.Body).Decode(&user) //Assign the json body into the local variable person
 	//Encrypt the password using Salt and Hashes
 	user.Password = hashAndSalt([]byte(user.Password))
-
 	// open up collection and write data
 	// create a new database if it doesn't already exist
 	if user.Level < 0 || user.Level > 2 {
@@ -196,11 +194,14 @@ func deleteUser(response http.ResponseWriter, request *http.Request) {
 
 	if err != nil {
 		result.Error = "Cannot find user"
+		json.NewEncoder(response).Encode(result)
 		log.Fatal(err)
 		return
 	}
 
-	result.Result = fmt.Sprintf("Removed %s: %d", user.Username, res.DeletedCount)
+	fmt.Sprintf("Removed %s: %d", user.Username, res.DeletedCount)
+	result.Result = "Successfully remove of user!"
+	json.NewEncoder(response).Encode(result)
 	return
 }
 
@@ -276,6 +277,7 @@ func updateUser(response http.ResponseWriter, request *http.Request) {
 		"username": user.Username,
 		"email":    user.Email,
 		"password": user.Password,
+		"level":    user.Level,
 	},
 	}
 
@@ -368,35 +370,35 @@ func getAllTutorDataUtils() []structs.User {
 
 }
 
-// //Helper method to get the professors data information
-// func getAllProfessorsDataUtils() []structs.User {
-// 	// return a struct object
-// 	var professors []structs.User
-// 	//connecting to the STUDENT database:
-// 	collection := client.Database("users").Collection("professors")
-// 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
-// 	cursor, err := collection.Find(ctx, bson.M{})                       //return everything in our collections
-// 	if err != nil {
-// 		fmt.Println("Unable to find the professors object")
-// 		log.Fatal(err)
-// 		return professors
-// 	}
-// 	defer cursor.Close(ctx)
-// 	//loop through the mongodb data objects and look for the data that we need
-// 	//assuming we were able to collect all data from the back end.
-// 	for cursor.Next(ctx) {
-// 		var professor structs.User
-// 		cursor.Decode(&professor)
-// 		professors = append(professors, professor)
-// 	}
-// 	//unable to append the students slice for the return value
-// 	if err := cursor.Err(); err != nil {
-// 		fmt.Println("Unable to append STUDENT collection into the return value")
-// 		log.Fatal(err)
-// 		return professors
-// 	}
-// 	return professors
-// }
+/* Helper method to get the professors data information */
+func getAllProfessorsDataUtils() []structs.User {
+	// return a struct object
+	var professors []structs.User
+	//connecting to the STUDENT database:
+	collection := client.Database("users").Collection("professors")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) //waiting time until return an error
+	cursor, err := collection.Find(ctx, bson.M{})                       //return everything in our collections
+	if err != nil {
+		fmt.Println("Unable to find the professors object")
+		log.Fatal(err)
+		return professors
+	}
+	defer cursor.Close(ctx)
+	//loop through the mongodb data objects and look for the data that we need
+	//assuming we were able to collect all data from the back end.
+	for cursor.Next(ctx) {
+		var professor structs.User
+		cursor.Decode(&professor)
+		professors = append(professors, professor)
+	}
+	//unable to append the students slice for the return value
+	if err := cursor.Err(); err != nil {
+		fmt.Println("Unable to append PROFESSOR collection into the return value")
+		log.Fatal(err)
+		return professors
+	}
+	return professors
+}
 
 // GetUsers gets documents from collections
 func GetAllUserData(response http.ResponseWriter, request *http.Request) {
@@ -404,13 +406,15 @@ func GetAllUserData(response http.ResponseWriter, request *http.Request) {
 	var students []structs.User                               //creating a slice of the struct to store data from the database
 	var tutors []structs.User
 	var res structs.ResponseResult
-	// var professors []structs.User
+	var professors []structs.User
 	students = getAllStudentDataUtils()
 	tutors = getAllTutorDataUtils()
+	professors = getAllProfessorsDataUtils()
 	//Creating a token after successful login for role based examination:
 	userDataToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"students": students,
-		"tutors":   tutors})
+		"students":   students,
+		"tutors":     tutors,
+		"professors": professors})
 
 	userDataTokenStr, err := userDataToken.SignedString([]byte("secret"))
 
@@ -589,13 +593,16 @@ func main() {
 	origin := handlers.AllowedOrigins([]string{"*"})
 
 	//define a path that would lead the function
-	r.HandleFunc("/register", RegisterUser).Methods("POST") //create a collection in the databse
-	r.HandleFunc("/login", LoginUser).Methods("POST")       //handling login request from the front-end.
+	r.HandleFunc("/register", addUser).Methods("POST") //create a collection in the databse
+	r.HandleFunc("/login", LoginUser).Methods("POST")  //handling login request from the front-end.
 	r.HandleFunc("/getAllUserData", GetAllUserData).Methods("GET")
-	r.HandleFunc("/updateUser/{userID}", updateUserAccount).Methods("POST")
+	r.HandleFunc("/updateUser/{userID}/{user_type}", updateUser).Methods("POST")
 
 	r.HandleFunc("/registerAdmin", createAdmin).Methods("POST")
 	r.HandleFunc("/loginAdmin", LoginAdmin).Methods("POST")
+
+	//deleteUser
+	r.HandleFunc("/deleteUser", deleteUser).Methods("POST")
 
 	fmt.Println("Finished setting up!")
 	fmt.Println("Listening on port 8000...")
