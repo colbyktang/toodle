@@ -111,6 +111,42 @@ func getAllQuestions(response http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(response).Encode(questions)
 }
 
+//Function to get all answers currently stored in the database:
+func getAllAnswers(response http.ResponseWriter, request *http.Request) {
+	//Setting the header for response:
+	response.Header().Add("content-type", "application/json")
+	//creating a slice of answer class
+	var answers []Answer
+	//check for all info in the answer collection
+	collection := client.Database("answer").Collection("Answers")
+	//Wainting time untile timed-out
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	cursor, err := collection.Find(ctx, bson.M{})
+	//error handling: error finding data inside the requested collection
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	defer cursor.Close(ctx)
+	//loop through the returned data obbjects and append them into a result array to send back to the datbase
+	for cursor.Next(ctx) {
+		var answer Answer
+		cursor.Decode(&answer)
+		answers = append(answers, answer)
+	}
+
+	//error handling
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+
+	//send the answers back to the front end, or requesting clients
+	json.NewEncoder(response).Encode(answers)
+}
+
 //Function to get all questions from a user:
 func getAllUserQuestions(response http.ResponseWriter, request *http.Request, username string) {
 	fmt.Println("getAllUserQuestions()")
@@ -557,6 +593,8 @@ func main() {
 	r.HandleFunc("/question", getAndWriteQuestion).Methods("POST") //create a collection in the databse
 	// r.HandleFunc("/login", LoginHandler).Methods("POST")           //Authenticate users already registered in the database
 	r.HandleFunc("/getAllQuestions", getAllQuestions).Methods("GET")
+	//Function to get all answers/threads currently in the database:
+	r.HandleFunc("/getAllAnswers", getAllAnswers).Methods("GET")
 	r.HandleFunc("/getThisQuestion/{studentID}", getQuestionFromParams).Methods("GET") //Function to retrieve a question based on the user_id.
 	//Function to write the answer object into the database
 	r.HandleFunc("/answer", createAnswerObject).Methods("POST")
