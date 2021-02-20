@@ -309,6 +309,45 @@ func updateUser(response http.ResponseWriter, request *http.Request) {
 
 }
 
+//Function to get a single users
+func getThisUser(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("content-type", "application/json") //setting the header
+	var user structs.User
+	// var res structs.ResponseResult
+	/* Getting the user id from the url and convert it into a hex id */
+	params := mux.Vars(request)
+	objID, err := primitive.ObjectIDFromHex(params["userID"])
+	userType := params["user_type"]
+	//error handling: hex ID generation
+	if err != nil {
+		fmt.Println("Objectid from hex Error", err)
+	} else {
+		fmt.Println("Objectid from hex", objID)
+	}
+	/* Mongodb client connection */
+	// open up collection and write data
+	// create a new database if it doesn't already exist
+	collection := client.Database("users").Collection("")
+	//Choosing which database to search the user based on the user type
+	if userType == "STUDENT" {
+		collection = client.Database("users").Collection("students")
+	} else if userType == "TUTOR" {
+		collection = client.Database("users").Collection("tutors")
+	} else if userType == "PROFESSOR" {
+		collection = client.Database("users").Collection("professors")
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//find the user
+	// filter := bson.M{"_id": bson.M{"$eq": objID}} //find the document based on the id from the url param
+	cursor := collection.FindOne(ctx, bson.M{"_id": objID})
+	//loop through the mongodb data objects and look for the data that we need
+	//assuming we were able to collect all data from the back end.
+	cursor.Decode(&user)
+	//sending the user object back to the FE
+	json.NewEncoder(response).Encode(user)
+	return
+}
+
 //Helper method to get the students data information
 func getAllStudentDataUtils() []structs.User {
 	// return a struct object
@@ -604,6 +643,8 @@ func main() {
 	//deleteUser
 	r.HandleFunc("/deleteUser", deleteUser).Methods("POST")
 
+	//get one user data
+	r.HandleFunc("/getThisUser/{userID}/{user_type}", getThisUser).Methods("GET")
 	fmt.Println("Finished setting up!")
 	fmt.Println("Listening on port 8000...")
 
