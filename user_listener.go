@@ -329,11 +329,11 @@ func getThisUser(response http.ResponseWriter, request *http.Request) {
 	// create a new database if it doesn't already exist
 	collection := client.Database("users").Collection("")
 	//Choosing which database to search the user based on the user type
-	if userType == "STUDENT" {
+	if userType == "student" {
 		collection = client.Database("users").Collection("students")
-	} else if userType == "TUTOR" {
+	} else if userType == "tutor" {
 		collection = client.Database("users").Collection("tutors")
-	} else if userType == "PROFESSOR" {
+	} else if userType == "professor" {
 		collection = client.Database("users").Collection("professors")
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -464,6 +464,53 @@ func GetAllUserData(response http.ResponseWriter, request *http.Request) {
 	}
 	res.Result = userDataTokenStr
 	json.NewEncoder(response).Encode(res)
+}
+
+//Function to authenticate professor login
+func LoginProfessor(w http.ResponseWriter, r *http.Request) {
+	//Setting header:
+	w.Header().Add("content-type", "application/json")
+	var professor structs.User
+	json.NewDecoder(r.Body).Decode(&professor)
+	collection := client.Database("users").Collection("professors")
+	var result structs.User
+	var res structs.ResponseResult
+
+	authenticate := collection.FindOne(context.TODO(), bson.D{{"username", professor.Username}}).Decode(&result)
+	//Error Handling: Unable to find the username in database
+	if authenticate != nil {
+		res.Error = "Invalid Username"
+		json.NewEncoder(w).Encode(res)
+		return
+
+	}
+	//check the password by hashing the plain text and match it with the hashed in the datatbase
+	authenticate = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(professor.Password))
+	if authenticate != nil {
+		res.Error = "Invalid password"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+
+	//after authentication is successful, we will send back a token to the front end
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": result.Username,
+		"id":       result.ID,
+		"userType": "professor"})
+
+	tokenString, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		res.Error = "Error while generating token,Try again"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+	//if user enter correct username and password combination:
+	// res.Result = "Your information is correct!"
+	//if every is correct, let the user in and generate a token
+	res.Result = tokenString
+	json.NewEncoder(w).Encode(res)
+	// fmt.Println(result.Username)
+	return
 }
 
 //Function to authenticate the admin into the admin portal
@@ -636,6 +683,7 @@ func main() {
 	r.HandleFunc("/login", LoginUser).Methods("POST")  //handling login request from the front-end.
 	r.HandleFunc("/getAllUserData", GetAllUserData).Methods("GET")
 	r.HandleFunc("/updateUser/{userID}/{user_type}", updateUser).Methods("POST")
+	r.HandleFunc("/loginProfessor", LoginProfessor).Methods("POST")
 
 	r.HandleFunc("/registerAdmin", createAdmin).Methods("POST")
 	r.HandleFunc("/loginAdmin", LoginAdmin).Methods("POST")
