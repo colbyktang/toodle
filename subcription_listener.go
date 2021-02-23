@@ -159,7 +159,7 @@ func main() {
 	//define a path that would lead the function
 	r.HandleFunc("/addSubscription/{userID}/{user_type}", addSubscription).Methods("POST")
 	//Endpoints to get the questions that matches the topics:
-	r.HandleFunc("/getMatchingTopics", getQuestionsBasedOnSubscription).Methods("GET")
+	r.HandleFunc("/getMatchingTopics", getQuestionsBasedOnSubscription).Methods("POST")
 	fmt.Println("Finished Setting Up!")
 	fmt.Println("Service now running on port 8081")
 
