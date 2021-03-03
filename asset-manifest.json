@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/static/css/main.b12aad4d.chunk.css",
-    "main.js": "/static/js/main.1bb94a2a.chunk.js",
-    "main.js.map": "/static/js/main.1bb94a2a.chunk.js.map",
+    "main.js": "/static/js/main.69682593.chunk.js",
+    "main.js.map": "/static/js/main.69682593.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.d4dc386d.js",
     "runtime-main.js.map": "/static/js/runtime-main.d4dc386d.js.map",
-    "static/js/2.ed15b044.chunk.js": "/static/js/2.ed15b044.chunk.js",
-    "static/js/2.ed15b044.chunk.js.map": "/static/js/2.ed15b044.chunk.js.map",
+    "static/js/2.2ec5d9e3.chunk.js": "/static/js/2.2ec5d9e3.chunk.js",
+    "static/js/2.2ec5d9e3.chunk.js.map": "/static/js/2.2ec5d9e3.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.602657c8c201798b389321106dd78cc6.js": "/precache-manifest.602657c8c201798b389321106dd78cc6.js",
+    "precache-manifest.a8186d6828ae0e8c2498eb3f2fe46379.js": "/precache-manifest.a8186d6828ae0e8c2498eb3f2fe46379.js",
     "service-worker.js": "/service-worker.js",
     "static/css/main.b12aad4d.chunk.css.map": "/static/css/main.b12aad4d.chunk.css.map",
-    "static/js/2.ed15b044.chunk.js.LICENSE.txt": "/static/js/2.ed15b044.chunk.js.LICENSE.txt",
+    "static/js/2.2ec5d9e3.chunk.js.LICENSE.txt": "/static/js/2.2ec5d9e3.chunk.js.LICENSE.txt",
     "static/media/Best-Programming-Languages-to-Start-Learning-Today.jpg": "/static/media/Best-Programming-Languages-to-Start-Learning-Today.7b8d9a65.jpg",
     "static/media/Competitive-Programming-1.jpg": "/static/media/Competitive-Programming-1.096339a2.jpg",
     "static/media/ToodleExample.png": "/static/media/ToodleExample.4d3fcccc.png",
@@ -24,8 +24,8 @@
   },
   "entrypoints": [
     "static/js/runtime-main.d4dc386d.js",
-    "static/js/2.ed15b044.chunk.js",
+    "static/js/2.2ec5d9e3.chunk.js",
     "static/css/main.b12aad4d.chunk.css",
-    "static/js/main.1bb94a2a.chunk.js"
+    "static/js/main.69682593.chunk.js"
   ]
 }
