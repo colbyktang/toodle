@@ -40,7 +40,7 @@ type Question struct {
 //Applicant data model:
 type Applicant struct {
 	ID                 primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	ProfessorID        string             `json:"professor_id,omitempty" bson:"professor_id,omitempty"`
+	ProfessorID        string             `json:"professorId,omitempty" bson:"professorId,omitempty"`
 	ApplicantName      string             `json:"applicantName,omitempty" bson:"applicantName,omitempty"`
 	ApplicantEmail     string             `json:"applicantEmail,omitempty" bson:"applicantEmail,omitempty"`
 	ApplicantPhone     string             `json:"applicantPhone,omitempty" bson:"applicantPhone,omitempty"`
